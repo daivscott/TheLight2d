@@ -42,6 +42,14 @@ io.on('connection', function (socket) {
         // emit a message to all players to remove this player
         io.emit('disconnect', socket.id);
     });
+    // when a player moves, update the player data
+    socket.on('playerMovement', function (movementData) {
+        players[socket.id].x = movementData.x;
+        players[socket.id].y = movementData.y;
+        players[socket.id].rotation = movementData.rotation;
+        // emit a message to all players about the player that moved
+        socket.broadcast.emit('playerMoved', players[socket.id]);
+    });
 });
 
 // set the server to listen on port 8081
