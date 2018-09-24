@@ -27,6 +27,7 @@ function preload() {
     // load the ship image
     this.load.image('ship', 'assets/spaceShips_001.png');
     this.load.image('otherPlayer', 'assets/enemyBlack5.png');
+    this.load.image('star', 'assets/star_gold.png');
 };
 
 function create() {
@@ -46,7 +47,7 @@ function create() {
             }
         });
     });
-    
+
     // listen for events
     this.socket.on('newPlayer', function (playerInfo) {
         addOtherPlayers(self, playerInfo);
@@ -72,6 +73,26 @@ function create() {
                 otherPlayer.setPosition(playerInfo.x, playerInfo.y);
             }
         });
+    });
+
+    // create text objects to display the scores
+    this.blueScoreText = this.add.text(16, 16, '', { fontSize: '32px', fill: '#0000FF' });
+    this.redScoreText = this.add.text(584, 16, '', { fontSize: '32px', fill: '#FF0000' });
+
+    // update the objects text components
+    this.socket.on('scoreUpdate', function (scores) {
+        self.blueScoreText.setText('Blue: ' + scores.blue);
+        self.redScoreText.setText('Red: ' + scores.red);
+    });
+
+    // star handling code
+    this.socket.on('starLocation', function (starLocation) {
+        if (self.star) self.star.destroy();
+        self.star = self.physics.add.image(starLocation.x, starLocation.y, 'star');
+        // check if player and star collide
+        self.physics.add.overlap(self.ship, self.star, function () {
+            this.socket.emit('starCollected');
+        }, null, self);
     });
 };
 
